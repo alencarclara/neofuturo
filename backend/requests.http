@@ -1,0 +1,82 @@
+@baseUrl = http://localhost:3000
+
+### 1. Contato válido, com espaços e maiúsculas (espera 201, dados normalizados)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "  Maria   da  Silva ",
+  "email": "  Maria.Silva@Email.COM ",
+  "phone": "21987654321"
+}
+
+### 2. Mesmo e-mail com outra capitalização (espera 409)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "Outra Maria",
+  "email": "MARIA.SILVA@email.com",
+  "phone": "21912345678"
+}
+
+### 3. Telefone com DDI e source informado (espera 201)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "João Pereira",
+  "email": "joao@empresa.com.br",
+  "phone": "+55 (11) 99876-5432",
+  "source": "linkedin"
+}
+
+### 4. Telefone inválido (espera 400 com a mensagem do normalizador)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "Ana Souza",
+  "email": "ana@email.com",
+  "phone": "2133334444"
+}
+
+### 5. E-mail inválido (espera 400)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "Ana Souza",
+  "email": "ana.email.com",
+  "phone": "21987651111"
+}
+
+### 6. Nome só com espaços (espera 400 do normalizador)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "    ",
+  "email": "vazio@email.com",
+  "phone": "21987652222"
+}
+
+### 7. Sem fullName (espera 400 do ValidationPipe)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "email": "semnome@email.com",
+  "phone": "21987653333"
+}
+
+### 8. Campo extra no body (espera 400 pelo whitelist)
+POST {{baseUrl}}/contacts
+Content-Type: application/json
+
+{
+  "fullName": "Hacker",
+  "email": "hacker@email.com",
+  "phone": "21987654444",
+  "id": 999
+}
