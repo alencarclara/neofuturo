@@ -1,9 +1,10 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '../generated/prisma/client';
 import { normalizeEmail, normalizeName, normalizePhone } from '../common/normalizers';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { catchError } from 'rxjs';
+import { ListContactsQueryDto } from './dto/query.dto';
 
 @Injectable()
 export class ContactsService {
@@ -36,5 +37,61 @@ export class ContactsService {
             }
             throw error;
         }
+    }
+
+    async findOne(id: number) {
+        const contact = await this.prisma.contact.findUnique({
+            where: { id },
+            include: {
+                tags: { include: { tag: true } },
+                summaries: { orderBy: { generatedAt: 'desc' }, take: 1 },
+            },
+        });
+
+        if (!contact) {
+            throw new NotFoundException(`Contato ${id} não encontrado`);
+        }
+
+        const { tags, summaries, ...rest } = contact;
+
+        return {
+            ...rest,
+            tags: tags.map((ct) => ct.tag),
+            latestSummary: summaries[0] ?? null,
+        };
+    }
+
+    async findAll({ page, limit, tagId }: ListContactsQueryDto) {
+        const where: Prisma.ContactWhereInput = tagId
+            ? { tags: { some: { tag: { id: tagId } } } }
+            : {};
+
+        const [contacts, total] = await this.prisma.$transaction([
+            this.prisma.contact.findMany({
+                where,
+                orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+                skip: (page - 1) * limit,
+                take: limit,
+                include: {
+                    tags: { include: { tag: true } },
+                    _count: { select: { summaries: true } },
+                },
+            }),
+            this.prisma.contact.count({ where }),
+        ]);
+
+        return {
+            data: contacts.map(({ tags, _count, ...rest }) => ({
+                ...rest,
+                tags: tags.map((ct) => ct.tag),
+                hasSummary: _count.summaries > 0,
+            })),
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
 }
