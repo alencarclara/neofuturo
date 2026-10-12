@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Contact {
+    id Int @id @default(autoincrement())
+    fullName String @map("full_name")
+    email String @unique
+    phone String
+    source String
+    createdAt DateTime @default(now()) @map("created_at")
+    address Json?
+
+    tags ContactTag[]
+    summaries AiSummary[]
+
+    @@map("contacts")
+}
+
+model Tag {
+    id Int @id @default(autoincrement())
+    name String @unique
+
+    contacts ContactTag[]
+
+    @@map("tags")
+}
+
+model ContactTag {
+    contactId Int @map("contact_id")
+    tagId Int @map("tag_id")
+    contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+    tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+    @@id([contactId, tagId])
+    @@map("contact_tags")
+}
+
+model AiSummary {
+    id Int @id @default(autoincrement())
+    contactId Int @map("contact_id")
+    summaryText String @map("summary_text")
+    generatedAt DateTime @default(now()) @map("generated_at")
+
+    contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+    @@index([contactId, generatedAt])
+
+    @@map("ai_summaries")
+
+}
