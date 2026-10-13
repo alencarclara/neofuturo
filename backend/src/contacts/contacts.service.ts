@@ -94,4 +94,37 @@ export class ContactsService {
             },
         };
     }
+
+    async addTag(contactId: number, tagId: number) {
+        try {
+            await this.prisma.contactTag.create({
+                data: { contactId, tagId },
+            });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new ConflictException('Esse contato já tem essa tag');
+                }
+                if (error.code === 'P2003') {
+                    throw new NotFoundException('Contato ou tag não encontrado');
+                }
+            }
+            throw error;
+        }
+
+        return this.findOne(contactId);
+    }
+
+    async removeTag(contactId: number, tagId: number) {
+        try {
+            await this.prisma.contactTag.delete({
+                where: { contactId_tagId: { contactId, tagId } },
+            });
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+                throw new NotFoundException('Esse livro não tem essa categoria');
+            }
+            throw error;
+        }
+    }
 }

@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, ParseIntPipe, Query, Delete, HttpCode } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { ListContactsQueryDto } from './dto/query.dto';
+import { AddTagDto } from './dto/add-tag.dto';
 
 @Controller('contacts')
 export class ContactsController {
@@ -20,6 +21,20 @@ export class ContactsController {
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.contactService.findOne(id);
+    }
+
+    @Post(':id/tags')
+    addTag(@Param('id', ParseIntPipe) id: number, @Body() dto: AddTagDto) {
+        return this.contactService.addTag(id, dto.tagId);
+    }
+
+    @Delete(':id/tags/:tagId')
+    @HttpCode(204)
+    removeTag(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('tagId', ParseIntPipe) tagId: number,
+    ) {
+        return this.contactService.removeTag(id, tagId);
     }
 }
 

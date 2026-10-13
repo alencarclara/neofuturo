@@ -80,3 +80,24 @@ Content-Type: application/json
   "phone": "21987654444",
   "id": 999
 }
+
+### Detalhe de um contato
+GET {{baseUrl}}/contacts/1
+
+### Contato inexistente (espera 404)
+GET {{baseUrl}}/contacts/9999
+
+### Id inválido (espera 400 do ParseIntPipe)
+GET {{baseUrl}}/contacts/abc
+
+### Lista: primeira página
+GET {{baseUrl}}/contacts
+
+### Lista: página 2, 2 por página
+GET {{baseUrl}}/contacts?page=2&limit=2
+
+### Lista: filtro por tag
+GET {{baseUrl}}/contacts?tag=cliente
+
+### Limite acima do máximo (espera 400)
+GET {{baseUrl}}/contacts?limit=500
