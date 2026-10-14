@@ -36,6 +36,12 @@ export class ContactsController {
     ) {
         return this.contactService.removeTag(id, tagId);
     }
+
+    @Post('import')
+    @HttpCode(200)
+    import(@Body() raw: unknown) {
+        return this.contactService.importMany(raw);
+    }
 }
 
 

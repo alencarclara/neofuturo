@@ -1,10 +1,14 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '../generated/prisma/client';
 import { normalizeEmail, normalizeName, normalizePhone } from '../common/normalizers';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { catchError } from 'rxjs';
 import { ListContactsQueryDto } from './dto/query.dto';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+const imported: { index: number; id: number; email: string }[] = [];
+const rejected: { index: number; input: unknown; reasons: string[] }[] = [];
 
 @Injectable()
 export class ContactsService {
@@ -126,5 +130,56 @@ export class ContactsService {
             }
             throw error;
         }
+    }
+
+    async importMany(raw: unknown) {
+        if (!Array.isArray(raw)) {
+            throw new BadRequestException('O corpo deve ser uma lista (array) de contatos');
+        }
+        if (raw.length === 0) {
+            throw new BadRequestException('A lista está vazia');
+        }
+        if (raw.length > 500) {
+            throw new BadRequestException('Máximo de 500 livros por importação');
+        }
+
+        for (const [index, item] of raw.entries()) {
+            const reasons = await this.validateItem(item);
+            if (reasons.length > 0) {
+                rejected.push({ index, input: item, reasons });
+                continue;
+            }
+
+            const dto = plainToInstance(CreateContactDto, item);
+            try {
+                const contact = await this.create({ ...dto, source: dto.source ?? 'import' });
+                imported.push({ index, id: contact.id, email: contact.email })
+            } catch (error) {
+                if (error instanceof HttpException) {
+                    rejected.push({ index, input: item, reasons: [error.message] });
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        return {
+            total: raw.length,
+            importedCount: imported.length,
+            rejectedCount: rejected.length,
+            imported,
+            rejected,
+        };
+    }
+
+    private async validateItem(item: unknown): Promise<string[]> {
+        if (typeof item != 'object' || item === null || Array.isArray(item)) {
+            return ['O item não é um objeto'];
+        }
+
+        const dto = plainToInstance(CreateContactDto, item);
+        const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+
+        return errors.flatMap((e) => Object.values(e.constraints ?? {}));
     }
 }
