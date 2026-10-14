@@ -42,6 +42,11 @@ export class ContactsController {
     import(@Body() raw: unknown) {
         return this.contactService.importMany(raw);
     }
+
+    @Post(':id/summarize')
+    generateSummary(@Param('id', ParseIntPipe) id: number) {
+        return this.contactService.generateSummary(id);
+    }
 }
 
 

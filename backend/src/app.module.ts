@@ -5,9 +5,10 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { ContactsModule } from './contacts/contacts.module';
 import { TagsModule } from './tags/tags.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, ContactsModule, TagsModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, ContactsModule, TagsModule, AiModule],
   controllers: [AppController],
   providers: [AppService],
 })

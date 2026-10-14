@@ -7,12 +7,14 @@ import { catchError } from 'rxjs';
 import { ListContactsQueryDto } from './dto/query.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { AiService } from '../ai/ai.service';
+
 const imported: { index: number; id: number; email: string }[] = [];
 const rejected: { index: number; input: unknown; reasons: string[] }[] = [];
 
 @Injectable()
 export class ContactsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService, private readonly aiService: AiService) { }
 
     async create(dto: CreateContactDto) {
         let fullName: string;
@@ -181,5 +183,18 @@ export class ContactsService {
         const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
 
         return errors.flatMap((e) => Object.values(e.constraints ?? {}));
+    }
+
+    async generateSummary(id: number) {
+        const contact = await this.findOne(id);
+
+        const text = await this.aiService.generateContactSummary({
+            fullName: contact.fullName,
+            email: contact.email,
+            phone: contact.phone,
+            tags: contact.tags.map((t) => t.name)
+        });
+
+        return this.prisma.aiSummary.create({ data: { contactId: id, summaryText: text } });
     }
 }
