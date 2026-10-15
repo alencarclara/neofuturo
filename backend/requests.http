@@ -97,7 +97,7 @@ GET {{baseUrl}}/contacts
 GET {{baseUrl}}/contacts?page=2&limit=2
 
 ### Lista: filtro por tag
-GET {{baseUrl}}/contacts?tag=cliente
+GET {{baseUrl}}/contacts?tagId=1
 
 ### Limite acima do máximo (espera 400)
 GET {{baseUrl}}/contacts?limit=500

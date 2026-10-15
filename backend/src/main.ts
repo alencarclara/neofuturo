@@ -12,6 +12,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      stopAtFirstError: true,
       transform: true,
       exceptionFactory: (errors) => new BadRequestException(validationMessages(errors)),
     }),

@@ -181,7 +181,7 @@ export class ContactsService {
         }
 
         const dto = plainToInstance(CreateContactDto, item);
-        const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+        const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true, stopAtFirstError: true });
 
         return validationMessages(errors);
     }
