@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { enrichAddress } from '../lib/api';
 import type { ContactDetail } from '../types';
 
@@ -12,7 +12,7 @@ export function AddressPanel({ contact, onChange }: Props) {
     const [error, setError] = useState<string | null>(null);
     const address = contact.address;
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
         setError(null);

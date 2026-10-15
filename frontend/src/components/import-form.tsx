@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type SubmitEvent } from 'react';
 import { importContacts } from '../lib/api';
 import type { ImportReport } from '../types';
 
@@ -11,7 +11,7 @@ export function ImportForm() {
     const [error, setError] = useState<string | null>(null);
     const [report, setReport] = useState<ImportReport | null>(null);
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const file = fileInput.current?.files?.[0];
         if (!file) return;

@@ -10,11 +10,10 @@ export async function ContactLoader({ params }: Props) {
     const id = toPositiveInt(rawId);
     if (!id) notFound();
 
-    try {
-        const [contact, tags] = await Promise.all([getContact(id), getTags()]);
-        return <ContactDetailView initialContact={contact} allTags={tags} />;
-    } catch (error) {
+    const [contact, tags] = await Promise.all([getContact(id), getTags()]).catch((error) => {
         if (error instanceof ApiError && error.status === 404) notFound();
         throw error;
-    }
+    });
+
+    return <ContactDetailView initialContact={contact} allTags={tags} />;
 }

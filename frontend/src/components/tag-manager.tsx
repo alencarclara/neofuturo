@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { addTagToContact, removeTagFromContact } from '../lib/api';
+import { useState, type SubmitEvent } from 'react';
+import { addTagToContact, createTag, removeTagFromContact } from '../lib/api';
 import type { ContactDetail, Tag } from '../types';
 
 type Props = {
@@ -10,8 +10,10 @@ type Props = {
     onChange: (contact: ContactDetail) => void;
 };
 
-export function TagManager({ contact, allTags, onChange }: Props) {
+export function TagManager({ contact, allTags: initialTags, onChange }: Props) {
+    const [allTags, setAllTags] = useState(initialTags);
     const [selectedId, setSelectedId] = useState('');
+    const [newTagName, setNewTagName] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +36,16 @@ export function TagManager({ contact, allTags, onChange }: Props) {
             const updated = await addTagToContact(contact.id, Number(selectedId));
             onChange(updated);
             setSelectedId('');
+        });
+    }
+
+    function handleCreate(e: SubmitEvent<HTMLFormElement>) {
+        e.preventDefault();
+        run(async () => {
+            const tag = await createTag(newTagName);
+            setAllTags((tags) => [...tags, tag].sort((a, b) => a.name.localeCompare(b.name)));
+            setNewTagName('');
+            onChange(await addTagToContact(contact.id, tag.id));
         });
     }
 
@@ -95,6 +107,28 @@ export function TagManager({ contact, allTags, onChange }: Props) {
                     </button>
                 </div>
             )}
+
+            <form onSubmit={handleCreate} className="mt-2 flex gap-2">
+                <label htmlFor="new-tag" className="sr-only">
+                    Nova tag
+                </label>
+                <input
+                    id="new-tag"
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder="Nova tag"
+                    maxLength={50}
+                    disabled={busy}
+                    className="rounded border px-2 py-1 text-sm"
+                />
+                <button
+                    type="submit"
+                    disabled={!newTagName.trim() || busy}
+                    className="rounded border border-blue-600 px-3 py-1 text-sm text-blue-700 disabled:opacity-50"
+                >
+                    Criar e adicionar
+                </button>
+            </form>
 
             {error && (
                 <p role="alert" className="mt-2 text-sm text-red-600">

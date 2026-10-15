@@ -3,15 +3,11 @@ import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '../generated/prisma/client';
 import { normalizeCep, normalizeEmail, normalizeName, normalizePhone } from '../common/normalizers';
 import { CreateContactDto } from './dto/create-contact.dto';
-import { catchError } from 'rxjs';
 import { ListContactsQueryDto } from './dto/query.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { AiService } from '../ai/ai.service';
 import { AddressService } from '../address/address.service';
-
-const imported: { index: number; id: number; email: string }[] = [];
-const rejected: { index: number; input: unknown; reasons: string[] }[] = [];
 
 @Injectable()
 export class ContactsService {
@@ -129,7 +125,7 @@ export class ContactsService {
             });
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-                throw new NotFoundException('Esse livro não tem essa categoria');
+                throw new NotFoundException('Esse contato não tem essa tag');
             }
             throw error;
         }
@@ -143,8 +139,11 @@ export class ContactsService {
             throw new BadRequestException('A lista está vazia');
         }
         if (raw.length > 500) {
-            throw new BadRequestException('Máximo de 500 livros por importação');
+            throw new BadRequestException('Máximo de 500 contatos por importação');
         }
+
+        const imported: { index: number; id: number; email: string }[] = [];
+        const rejected: { index: number; input: unknown; reasons: string[] }[] = [];
 
         for (const [index, item] of raw.entries()) {
             const reasons = await this.validateItem(item);
