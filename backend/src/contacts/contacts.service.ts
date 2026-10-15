@@ -6,6 +6,7 @@ import { CreateContactDto } from './dto/create-contact.dto';
 import { ListContactsQueryDto } from './dto/query.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { validationMessages } from '../common/validation';
 import { AiService } from '../ai/ai.service';
 import { AddressService } from '../address/address.service';
 
@@ -182,7 +183,7 @@ export class ContactsService {
         const dto = plainToInstance(CreateContactDto, item);
         const errors = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
 
-        return errors.flatMap((e) => Object.values(e.constraints ?? {}));
+        return validationMessages(errors);
     }
 
     async generateSummary(id: number) {

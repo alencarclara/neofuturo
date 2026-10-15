@@ -67,12 +67,17 @@ Acesse http://localhost:3000.
 
 Exemplos prontos de requisição em [`backend/requests.http`](backend/requests.http) e um arquivo de exemplo
 para importação em [`frontend/public/exemplo-importacao.json`](frontend/public/exemplo-importacao.json).
+Num banco vazio, esse arquivo importa 2 contatos e recusa os outros 7, cobrindo e-mail duplicado na própria
+lista, telefone fixo, e-mail inválido, nome ausente ou com tipo errado, campo extra e item que não é objeto.
+Como os e-mails já existem a partir da segunda importação, todos os itens passam a ser recusados por duplicidade.
 
 ## Normalização
 
 - **Nome:** remove espaços nas pontas e espaços repetidos.
 - **E-mail:** `trim` + minúsculas, validado no formato `nome@dominio.tld`. E-mails duplicados são rejeitados (409).
-- **Telefone:** aceita qualquer formatação (inclusive `+55`) e salva como `(XX) XXXXX-XXXX`.
+- **Telefone:** apenas celular brasileiro: 11 dígitos (DDD + número começando com 9), com ou sem `+55`.
+  Pontuação e espaços são ignorados, e o número é salvo como `(XX) XXXXX-XXXX`. Telefones fixos
+  (10 dígitos) são recusados.
 - **CEP:** aceita com ou sem hífen; precisa ter 8 dígitos.
 
 ## Banco de dados
