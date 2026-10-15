@@ -1,19 +1,19 @@
-import { IsInt, isNotEmpty, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateContactDto {
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'O nome deve ser um texto' })
+    @IsNotEmpty({ message: 'O nome é obrigatório' })
     fullName: string;
 
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'O e-mail deve ser um texto' })
+    @IsNotEmpty({ message: 'O e-mail é obrigatório' })
     email: string;
 
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'O telefone deve ser um texto' })
+    @IsNotEmpty({ message: 'O telefone é obrigatório' })
     phone: string;
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'A origem (source) deve ser um texto' })
     source?: string;
 }
