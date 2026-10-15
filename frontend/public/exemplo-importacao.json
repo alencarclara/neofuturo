@@ -1,0 +1,49 @@
+[
+    {
+        "fullName": "  Carla   Mendes ",
+        "email": "Carla@Email.com",
+        "phone": "21988887777"
+    },
+    {
+        "fullName": "Bruno Lima",
+        "email": "bruno@email.com",
+        "phone": "+55 (11) 97777-6666",
+        "source": "evento"
+    },
+    {
+        "fullName": "Carla Duplicada",
+        "email": "carla@email.com",
+        "phone": "21911112222"
+    },
+    {
+        "fullName": "Já Existe",
+        "email": "teste@email.com",
+        "phone": "21933334444"
+    },
+    {
+        "fullName": "Telefone Fixo",
+        "email": "fixo@email.com",
+        "phone": "2133334444"
+    },
+    {
+        "fullName": "Email Ruim",
+        "email": "email-sem-arroba",
+        "phone": "21955556666"
+    },
+    {
+        "email": "semnome@email.com",
+        "phone": "21966667777"
+    },
+    {
+        "fullName": 123,
+        "email": "numero@email.com",
+        "phone": "21977778888"
+    },
+    {
+        "fullName": "Campo Extra",
+        "email": "extra@email.com",
+        "phone": "21999990000",
+        "idade": 30
+    },
+    "isso não é um contato"
+]
