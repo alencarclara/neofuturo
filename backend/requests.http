@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3001
 
 ### 1. Contato válido, com espaços e maiúsculas (espera 201, dados normalizados)
 POST {{baseUrl}}/contacts
