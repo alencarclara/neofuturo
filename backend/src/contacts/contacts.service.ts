@@ -1,20 +1,21 @@
 import { BadRequestException, ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { Prisma } from '../generated/prisma/client';
-import { normalizeEmail, normalizeName, normalizePhone } from '../common/normalizers';
+import { normalizeCep, normalizeEmail, normalizeName, normalizePhone } from '../common/normalizers';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { catchError } from 'rxjs';
 import { ListContactsQueryDto } from './dto/query.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { AiService } from '../ai/ai.service';
+import { AddressService } from '../address/address.service';
 
 const imported: { index: number; id: number; email: string }[] = [];
 const rejected: { index: number; input: unknown; reasons: string[] }[] = [];
 
 @Injectable()
 export class ContactsService {
-    constructor(private readonly prisma: PrismaService, private readonly aiService: AiService) { }
+    constructor(private readonly prisma: PrismaService, private readonly aiService: AiService, private readonly addressService: AddressService) { }
 
     async create(dto: CreateContactDto) {
         let fullName: string;
@@ -196,5 +197,25 @@ export class ContactsService {
         });
 
         return this.prisma.aiSummary.create({ data: { contactId: id, summaryText: text } });
+    }
+
+    async enrichAddress(id: number, rawCep: string) {
+        await this.findOne(id);
+
+        let cep: string;
+        try {
+            cep = normalizeCep(rawCep);
+        } catch (error) {
+            throw new BadRequestException((error as Error).message);
+        }
+
+        const address = await this.addressService.lookupCep(cep);
+
+        await this.prisma.contact.update({
+            where: { id },
+            data: { address: { ...address } }
+        });
+
+        return this.findOne(id);
     }
 }

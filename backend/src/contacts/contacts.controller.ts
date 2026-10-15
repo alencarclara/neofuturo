@@ -3,6 +3,7 @@ import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { ListContactsQueryDto } from './dto/query.dto';
 import { AddTagDto } from './dto/add-tag.dto';
+import { EnrichAddressDto } from './dto/enrich-address-dto';
 
 @Controller('contacts')
 export class ContactsController {
@@ -46,6 +47,12 @@ export class ContactsController {
     @Post(':id/summarize')
     generateSummary(@Param('id', ParseIntPipe) id: number) {
         return this.contactService.generateSummary(id);
+    }
+
+    @Post(':id/enrich-address')
+    @HttpCode(200)
+    enrichAddress(@Param('id', ParseIntPipe) id: number, @Body() dto: EnrichAddressDto) {
+        return this.contactService.enrichAddress(id, dto.cep);
     }
 }
 
