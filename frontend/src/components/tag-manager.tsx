@@ -1,0 +1,106 @@
+'use client';
+
+import { useState } from 'react';
+import { addTagToContact, removeTagFromContact } from '../lib/api';
+import type { ContactDetail, Tag } from '../types';
+
+type Props = {
+    contact: ContactDetail;
+    allTags: Tag[];
+    onChange: (contact: ContactDetail) => void;
+};
+
+export function TagManager({ contact, allTags, onChange }: Props) {
+    const [selectedId, setSelectedId] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const available = allTags.filter((tag) => !contact.tags.some((t) => t.id === tag.id));
+
+    async function run(action: () => Promise<void>) {
+        setBusy(true);
+        setError(null);
+        try {
+            await action();
+        } catch (e) {
+            setError((e as Error).message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function handleAdd() {
+        run(async () => {
+            const updated = await addTagToContact(contact.id, Number(selectedId));
+            onChange(updated);
+            setSelectedId('');
+        });
+    }
+
+    function handleRemove(tagId: number) {
+        run(async () => {
+            await removeTagFromContact(contact.id, tagId);
+            onChange({ ...contact, tags: contact.tags.filter((t) => t.id !== tagId) });
+        });
+    }
+
+    return (
+        <section>
+            <h2 className="mb-2 text-lg font-semibold">Tags</h2>
+
+            {contact.tags.length === 0 ? (
+                <p className="mb-3 text-sm text-gray-500">Nenhuma tag.</p>
+            ) : (
+                <ul className="mb-3 flex flex-wrap gap-2">
+                    {contact.tags.map((tag) => (
+                        <li
+                            key={tag.id}
+                            className="flex items-center gap-1 rounded-full bg-gray-100 py-1 pr-1 pl-3 text-sm"
+                        >
+                            {tag.name}
+                            <button
+                                onClick={() => handleRemove(tag.id)}
+                                disabled={busy}
+                                aria-label={`Remover tag ${tag.name}`}
+                                className="rounded-full px-2 text-gray-500 hover:bg-gray-200 disabled:opacity-50"
+                            >
+                                ×
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {available.length > 0 && (
+                <div className="flex gap-2">
+                    <select
+                        value={selectedId}
+                        onChange={(e) => setSelectedId(e.target.value)}
+                        disabled={busy}
+                        className="rounded border px-2 py-1 text-sm"
+                    >
+                        <option value="">Escolha uma tag...</option>
+                        {available.map((tag) => (
+                            <option key={tag.id} value={tag.id}>
+                                {tag.name}
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={handleAdd}
+                        disabled={!selectedId || busy}
+                        className="rounded bg-blue-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+                    >
+                        Adicionar
+                    </button>
+                </div>
+            )}
+
+            {error && (
+                <p role="alert" className="mt-2 text-sm text-red-600">
+                    {error}
+                </p>
+            )}
+        </section>
+    );
+}
